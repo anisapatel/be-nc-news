@@ -3,6 +3,7 @@ exports.up = function(knex) {
     console.log("Creating comments table...");
     return knex.schema.createTable("comments", (commentData) => {
         commentData.increments("comment_id").primary();
+        commentData.string("author").notNullable();
         commentData.integer("author_id").references("users.user_id");
         commentData.integer("article_id").references("articles.article_id");
         commentData.integer("votes").defaultTo(0);
