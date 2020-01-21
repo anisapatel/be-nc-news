@@ -1,3 +1,4 @@
+
 const {
   topicData,
   articleData,
@@ -6,22 +7,27 @@ const {
 } = require('../data/index.js');
 
 
-
 const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
 
-
 exports.seed = function(knex) {
+  return knex.migrate
+  .rollback()
+  .then(() => knex.migrate.latest())
+  .then(() => {
+    const topicsInsertions = knex('topics').insert(topicData).returning("*");
+    const usersInsertions = knex('users').insert(userData).returning("*");
+    return Promise.all([topicsInsertions, usersInsertions])
+  })
+  .then((array) => {
+    let insertedTopics = array[0];
+    // console.log(`Inserted ${insertedTopics.length} topics into the database.`)
+    let insertedUsers = array[1];
+    // console.log(`Inserted ${insertedUsers.length} users into the database.`)
 
-  const topicsInsertions = knex('topics').insert(topicData);
-  const usersInsertions = knex('users').insert(userData);
-  const formattedDates = formatDates(articleData);
-  return Promise.all([topicsInsertions, usersInsertions])
-    .then((array) => {
-      console.log(array)
-
-
-
-
+  let formattedDates = formatDates(articleData);
+  return knex('articles').insert(formattedDates).returning('*');
+  
+})
 
       /* 
       
@@ -31,8 +37,10 @@ exports.seed = function(knex) {
 
       Your comment insertions will depend on information from the seeded articles, so make sure to return the data after it's been seeded.
       */
-    })
-    .then(articleRows => {
+      .then(insertedArticles => {
+      // console.log(`Inserted ${insertedArticles.length} articles into the database.`)
+     
+
       /* 
 
       Your comment data is currently in the incorrect format and will violate your SQL schema. 
@@ -42,8 +50,15 @@ exports.seed = function(knex) {
       You will need to write and test the provided makeRefObj and formatComments utility functions to be able insert your comment data.
       */
 
-      const articleRef = makeRefObj(articleRows);
-      const formattedComments = formatComments(commentData, articleRef);
-      return knex('comments').insert(formattedComments);
-    });
+      const articleRef = makeRefObj(insertedArticles, 'title', 'article_id');
+      const keyToRename = ["created_by", "belongs_to"];
+      const keyToInsert = ["author", "article_id"];
+      const formattedComments = formatComments(commentData, keyToRename, keyToInsert, articleRef);
+      return knex('comments').insert(formattedComments).returning("*");
+
+
+    }).then((insertedFormattedComments) => {
+      return insertedFormattedComments;
+      // console.log(`Inserted ${insertedFormattedComments.length} comments into the database.`)
+    })
 };

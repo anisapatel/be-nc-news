@@ -1,10 +1,11 @@
 
 exports.up = function(knex) {
-    console.log("Creating users table...");
+    // console.log("Creating users table...");
     return knex.schema.createTable("users", (usersTable) => {
         usersTable.increments('user_id').primary();
-        usersTable.string("username").notNullable();
+        usersTable.string("username").unique().notNullable();
         usersTable.string("name");
+        usersTable.string("avatar_url").notNullable();
 
 
     })
@@ -12,7 +13,7 @@ exports.up = function(knex) {
 };
 
 exports.down = function(knex) {
-    console.log("Removing users table...");
+    // console.log("Removing users table...");
     return knex.schema.dropTable("users");
 
   

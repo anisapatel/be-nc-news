@@ -110,8 +110,92 @@ describe('formatComments', () => {
   it("for single item in the array with a ref object, it returns a formatted comment", () => {
     const testTargets = [
       {
+        body:
+          "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        belongs_to: "They're not exactly dogs, are they?",
+        created_by: 'butter_bridge',
+        votes: 16,
+        created_at: 1511354163389,
+      }
+     ];
+
+    const lookupObj = {
+      "They're not exactly dogs, are they?": 1
+    };
+
+    const output = [
+      {
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        created_at: new Date(1511354163389),
+        author: 'butter_bridge',
+        article_id: 1
+      }
+    ];
+
+    const keyToRename = ["created_by", "belongs_to"];
+
+    const keyToInsert = ["author", "article_id"];
+
+    expect(formatComments(testTargets, keyToRename, keyToInsert, lookupObj)).to.eql(
+      output
+    );
+  })
+  it("returns a formatted comment for multiple objects", () => {
+    const testTargets = [
+      {
         body: 'This is a bad article name',
         belongs_to: 'A',
+        created_by: 'butter_bridge',
+        votes: 1,
+        created_at: 1038314163389,
+      },
+      {
+        body:
+          'Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.',
+        belongs_to: 'B',
+        created_by: 'icellusedkars',
+        votes: 100,
+        created_at: 1448282163389,
+      }
+     ];
+
+     const lookupObj = {
+       A: 'A BRIEF HISTORY OF FOOD—NO BIG DEAL',
+       B: "A history of suits"
+
+     };
+
+     const output = [{
+        body: 'This is a bad article name',
+        article_id: 'A BRIEF HISTORY OF FOOD—NO BIG DEAL',
+        author: 'butter_bridge',
+        votes: 1,
+        created_at: new Date(1038314163389),
+      },
+      {
+        body:
+          'Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.',
+        article_id: 'A history of suits',
+        author: 'icellusedkars',
+        votes: 100,
+        created_at: new Date(1448282163389),
+      }];
+
+
+    const keyToRename = ["created_by", "belongs_to"];
+
+    const keyToInsert = ["author", "article_id"];
+
+    expect(formatComments(testTargets, keyToRename, keyToInsert, lookupObj)).to.eql(
+      output
+    );
+  })
+  it("original input is not mutated", () => {
+    const testTargets = [
+      {
+        body: 'This is a bad article name',
+        belongs_to: 'A history of suits',
         created_by: 'butter_bridge',
         votes: 1,
         created_at: 1038314163389,
@@ -119,47 +203,36 @@ describe('formatComments', () => {
      ];
   
 
-    const lookupObj = {
-      A: 1
+    const refObj = {
+      "A history of suits": 1
     };
 
     const output = [
       {
         body: 'This is a bad article name',
-        article_id: 'A',
-        author: 'butter_bridge',
         votes: 1,
         created_at: new Date(1038314163389),
+        author: 'butter_bridge',
+        article_id: 'A history of suits'
       }
     ];
 
-    const keyToReplace = "created_by";
+    const keyToRename = ["created_by", "belongs_to"];
 
-    const keyToInsert = "author";
+    const keyToInsert = ["author", "article_id"];
 
-    expect(keyReplace(testTargets, lookupObj, keyToReplace, keyToInsert)).to.eql(
-      output
-    );
-  });
-  xit("original input is not mutated", () => {
-    const testTargets = [
+   
+
+    formatComments(testTargets, refObj, keyToRename, keyToInsert);
+
+    expect(testTargets).to.eql([
       {
-        shop_name: "Corwin, Moen and Brakus",
-        owner: "firstname-a",
-        slogan: "Face to face full-range functionalities"
+        body: 'This is a bad article name',
+        belongs_to: 'A history of suits',
+        created_by: 'butter_bridge',
+        votes: 1,
+        created_at: 1038314163389,
       }
-    ];
-
-    const lookupObj = {
-      "firstname-a": 1
-    };
-
-    const newKey = "owner_id";
-
-    const keyToDelete = "owner";
-
-    keyReplace(testTargets, lookupObj, newKey, keyToDelete);
-
-    expect(testTargets).to.eql(testTargets);
+     ]);
   });
 });
