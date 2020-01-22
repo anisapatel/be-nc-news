@@ -1,7 +1,8 @@
+exports.handle400s 
 exports.handlePsqlErrors = (err, req, res, next) => {
     const psqlCodes = ['22P02'];
     if (psqlCodes.includes(err.code)) {
-        res.status(400).send({msg: "BAD REQUEST - invalid id" })
+        res.status(400).send({msg: "BAD REQUEST"})
     } else {
         next(err)
     }

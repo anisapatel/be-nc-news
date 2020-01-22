@@ -7,8 +7,8 @@ exports.up = function(knex) {
         articlesData.string("body", 5000).notNullable();
         articlesData.integer("votes").defaultTo(0);
         articlesData.string("topic").references("topics.slug");
-        articlesData.string("author").notNullable();
-        articlesData.integer("author_id").references("users.user_id");
+       
+        articlesData.string("author").references("users.username").notNullable();
         articlesData.timestamp("created_at").defaultTo(knex.fn.now());
     })
 };

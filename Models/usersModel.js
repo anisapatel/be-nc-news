@@ -1,14 +1,13 @@
 const knex = require("../db/connection");
 
-exports.fetchUserByUserId = (user_id) => {
+exports.fetchUserByUsername = (username) => {
     return knex
-    .select("*")
     .from("users")
-    .where("user_id", "=", user_id)
-    .returning("*")
+    .select("*")
+    .where("users.username", "=", username)
     .then((user) => {
         if(user.length === 0) {
-            return Promise.reject({status: 404, msg: "This user_id does not exist"})
+            return Promise.reject({status: 404, msg: "This username does not exist"})
         } else {
             return user;
         }
