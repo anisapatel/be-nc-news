@@ -1,4 +1,4 @@
-const {fetchArticleByArticleId, updateArticleByVotes, insertCommentByArticleId} = require("../Models/articlesModel");
+const {fetchArticleByArticleId, updateArticleByVotes, insertCommentByArticleId, fetchCommentsByArticleId, fetchAllArticles} = require("../Models/articlesModel");
 
 exports.getArticleByArticleId = (req, res, next) => {
     const {article_id} = req.params;
@@ -17,8 +17,24 @@ exports.patchArticleByVotes = (req, res, next) => {
 
 exports.postCommentByArticleId = (req, res, next) => {
     const {article_id} = req.params;
-    const commentToPost = req.body;
-    insertCommentByArticleId(article_id, commentToPost).then((postedComment) => {
-        res.status(200).send({postedComment})
+    const commentToFormat = req.body;
+    insertCommentByArticleId(article_id, commentToFormat).then((postedComment) => {
+        res.status(201).send({postedComment})
+    }).catch(next);
+}
+
+exports.getCommentsByArticleId = (req, res, next) => {
+    const {article_id} = req.params;
+    const sort_by = req.query;
+    fetchCommentsByArticleId(article_id, sort_by).then((comments) => {
+        res.status(200).send({comments})
+    }).catch(next);
+}
+
+exports.getAllArticles = (req, res, next) => {
+    const sort_by = req.query;
+    console.log(sort_by)
+    fetchAllArticles(sort_by).then((articles) => {
+        res.status(200).send({articles})
     }).catch(next);
 }

@@ -1,7 +1,10 @@
 process.env.NODE_ENV = 'test';
 const app = require("../app");
 const request = require("supertest");
-const {expect} = require("chai");
+const chai = require("chai");
+const chaiSorted = require("chai-sorted");
+const {expect} = chai;
+chai.use(chaiSorted);
 const knex = require("../db/connection")
 
 
@@ -142,16 +145,86 @@ describe("/api/articles/:article_id/comments", () => {
             return request(app)
             .post("/api/articles/1/comments")
             .send({username: 'butter_bridge', body: 'cool article'})
+            .expect(201)
+            .then(({body}) => {
+                expect(body.postedComment[0]).to.contain.keys("comment_id", "author", "article_id", "votes", "created_at", "body")
+            })
+        })
+            it("status: 400, invalid comment_id", () => {
+              return request(app)
+                .post("/api/articles/JOHNYY/comments")
+                .send({username: 'butter_bridge', body: 'cool article'})
+                .expect(400)
+                .then(({ body }) => {
+                  expect(body.msg).to.equal("BAD REQUEST");
+                });
+          });
+          it("status: 400, Attempting to post an empty body", () => {
+            return request(app)
+              .post("/api/articles/1/comments")
+              .send({})
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal("BAD REQUEST");
+              });
+          });
+            xit("status: 422, attempted to post using the wrong id", () => {
+              return request(app)
+                .post("/api/articles/5000/comments")
+                .send({username: 'butter_bridge', body: 'cool article'})
+                .expect(422)
+                .then(({ body }) => {
+                  expect(body.msg).to.equal("unprocessable post");
+                });
+            });
+    })
+    describe("GET", () => {
+        it("status: 200, gets comments for an article id", () => {
+            return request(app)
+            .get("/api/articles/1/comments")
             .expect(200)
             .then(({body}) => {
-                expect(body.postedComment).to.equal({
-                    body:
-                      'cool article',
-                    belongs_to: 'Living in the shadow of a great man',
-                    created_by: 'butter_bridge',
-                    votes: 14,
-                    created_at: 1479818163389,
-                  })
+                expect(body.comments[0]).to.contain.keys("comment_id", "votes", "created_at", "author", "body")
+            })
+        })
+        it("status: 200, sorts comments by author", () => {
+            return request(app)
+            .get("/api/articles/1/comments?sort_by=author")
+            .expect(200)
+            .then(({body}) => {
+                expect(body.comments).to.be.sortedBy("author", {descending: true})
+            })
+        })
+            it("status: 400, invalid query passed in", () => {
+              return request(app)
+                .get("/api/articles/1/comments?sort_by=invalid")
+                .expect(400)
+                .then(({ body }) => {
+                  expect(body.msg).to.equal("BAD REQUEST");
+                });
+            });
+            xit("status 404, Invalid path", () => {
+              return request(app)
+                .get("/invalid-path")
+                .expect(404)
+                .then(({ body }) => {
+                  expect(body.msg).to.equal("Path not found");
+                });
+            });
+  
+        
+    })
+    
+})
+describe("/api/articles", () => {
+    describe("GET", () => {
+        it("status: 200, get all articles formatted correctly", () => {
+            return request(app)
+            .get("/api/articles?sort_by=author&&username=butter_bridge")
+            .expect(200)
+            .then(({body}) => {
+                expect(body.articles).to.contain.keys("author", "article_id", "topic", "created_at", "votes", "comment_count")
+                expect(body.articles).to.be.sortedBy("author", {descending: true})
             })
         })
     })
