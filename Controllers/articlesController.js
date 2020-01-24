@@ -31,10 +31,9 @@ exports.getCommentsByArticleId = (req, res, next) => {
     }).catch(next);
 }
 
+
 exports.getAllArticles = (req, res, next) => {
-    const sort_by = req.query;
-    console.log(sort_by)
-    fetchAllArticles(sort_by).then((articles) => {
+    fetchAllArticles(req.query).then((articles) => {
         res.status(200).send({articles})
     }).catch(next);
 }

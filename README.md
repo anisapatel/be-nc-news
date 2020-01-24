@@ -338,15 +338,7 @@ As soon as you think that you have handled all the possible errors that you can 
 # Continue...
 
 ---
-
-```http
-GET /api
-```
-
-#### Responds with
-
-- JSON describing all the available endpoints on your API
-
+ 
 ---
 
 ### Step 3 - Hosting

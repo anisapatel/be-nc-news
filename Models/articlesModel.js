@@ -18,11 +18,11 @@ exports.fetchArticleByArticleId = (article_id) => {
     })
 }
 
-exports.updateArticleByVotes = (article_id, voteToPatch) => {
+exports.updateArticleByVotes = (article_id, {inc_votes = 0}) => {
     return knex
     .from("articles")
     .where("articles.article_id", "=", article_id)
-    .increment('votes', voteToPatch.inc_votes)
+    .increment('votes', inc_votes)
     .returning("*")
     .then(updatedArticle => {
          return updatedArticle[0];
@@ -40,11 +40,13 @@ exports.insertCommentByArticleId = (article_id, commentToFormat) => {
     })
 }
 
+
 exports.fetchCommentsByArticleId = (article_id, {sort_by = "created_at"}) => {
     return knex
     .select("*")
     .from("comments")
-    .where("comments.article_id", "=", article_id)
+    .where({article_id})
+    // .where("comments.article_id", "=", article_id)
     .orderBy(sort_by, "desc")
     .returning("*")
     .then((comments) => {
@@ -52,18 +54,24 @@ exports.fetchCommentsByArticleId = (article_id, {sort_by = "created_at"}) => {
     })
 }
 
-exports.fetchAllArticles = (username, {sort_by = "created_at"}) => {
-    console.log(username)
+exports.fetchAllArticles = ({username, topic, sort_by = "created_at"}) => {
     return knex
-    .select("articles.*")
+    .select("articles.article_id","articles.title","articles.topic","articles.created_at","articles.votes","articles.author")
     .count({comment_count: "comments.comment_id"})
     .from("articles")
     .leftJoin("comments", "comments.article_id", "articles.article_id")
     .groupBy("articles.article_id")
     .orderBy(sort_by, "desc")
-    .returning("*")
+    .modify(query => {
+        if (username) query.where("articles.author", "=", username)
+        if (topic) query.where("articles.topic", "=", topic)
+    })
+    
     .then((articles) => {
-        console.log(articles)
+        return articles;
     })
 }
+
+
+
 
