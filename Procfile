@@ -1,1 +1,1 @@
-web: node listen.js
+web: npm start
