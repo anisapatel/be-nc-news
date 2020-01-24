@@ -5,11 +5,7 @@ exports.formatDates = list => {
     
     const formattedObj = list.map(element => {
         let formattedDate = new Date(element.created_at);
-        // const result = unformattedDate.getDate() + '/' + (unformattedDate.getMonth()) + '/' + unformattedDate.getFullYear() + " " + unformattedDate.getHours() + ':' + unformattedDate.getMinutes();
-        
-        // delete element.created_at;
         const newObj = {...element, created_at :formattedDate}
-
         return newObj;
         
     }); 
