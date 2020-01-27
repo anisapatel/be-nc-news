@@ -22,8 +22,8 @@ exports.patchArticleByVotes = (req, res, next) => {
   const { article_id } = req.params;
   const voteToPatch = req.body;
   updateArticleByVotes(article_id, voteToPatch)
-    .then(updatedArticle => {
-      res.status(200).send({ updatedArticle });
+    .then(article => {
+      res.status(200).send({ article });
     })
     .catch(next);
 };
@@ -32,32 +32,31 @@ exports.postCommentByArticleId = (req, res, next) => {
   const { article_id } = req.params;
   const commentToFormat = req.body;
   insertCommentByArticleId(article_id, commentToFormat)
-    .then(postedComment => {
-      res.status(201).send({ postedComment });
+    .then(comment => {
+      res.status(201).send({ comment });
     })
     .catch(next);
 };
 
 exports.getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-  const sort_by = req.query;
   Promise.all([
-    fetchCommentsByArticleId(article_id, sort_by),
+    fetchCommentsByArticleId(article_id, req.query),
     checkArticleExists(article_id)
   ])
-    .then(([comments]) => {
-      res.status(200).send({ comments });
+    .then(([comment]) => {
+      res.status(200).send({ comment });
     })
     .catch(next);
 };
 
 exports.getAllArticles = (req, res, next) => {
   const promises = [fetchAllArticles(req.query)];
-  if (req.query.username) promises.push(checkUserExists(req.query.username));
+  if (req.query.author) promises.push(checkUserExists(req.query.author));
   if (req.query.topic) promises.push(checkTopicExists(req.query.topic));
   Promise.all(promises)
-    .then(([articles]) => {
-      res.status(200).send({ articles });
+    .then(([article]) => {
+      res.status(200).send({ article });
     })
     .catch(next);
 };

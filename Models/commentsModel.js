@@ -6,8 +6,15 @@ exports.updateCommentByCommentId = (comment_id, { inc_votes = 0 }) => {
     .where("comments.comment_id", "=", comment_id)
     .increment("votes", inc_votes)
     .returning("*")
-    .then(updatedComment => {
-      return updatedComment;
+    .then(comment => {
+      if (comment.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "This comment id has not sent back any comments"
+        });
+      } else {
+        return comment;
+      }
     });
 };
 

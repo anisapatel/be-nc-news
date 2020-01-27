@@ -24,7 +24,7 @@ exports.checkUserExists = username => {
       if (!thing)
         return Promise.reject({
           status: 404,
-          msg: "This username does not exist"
+          msg: "This user does not exist"
         });
     });
 };

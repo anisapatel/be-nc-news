@@ -29,8 +29,15 @@ exports.updateArticleByVotes = (article_id, { inc_votes = 0 }) => {
       if (inc_votes < 0) query.decrement("votes", inc_votes);
     })
     .returning("*")
-    .then(updatedArticle => {
-      return updatedArticle[0];
+    .then(article => {
+      if (article.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "The updated article by votes has not been returned"
+        });
+      } else {
+        return article;
+      }
     });
 };
 
@@ -44,24 +51,46 @@ exports.insertCommentByArticleId = (article_id, commentToFormat) => {
     .insert(commentToPost)
     .into("comments")
     .returning("*")
-    .then(postedComment => {
-      return postedComment;
+    .then(comment => {
+      if (comment.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "The inserted comment by article_id has not been returned"
+        });
+      } else {
+        return comment;
+      }
     });
 };
 
-exports.fetchCommentsByArticleId = (article_id, { sort_by = "created_at" }) => {
+exports.fetchCommentsByArticleId = (
+  article_id,
+  { sort_by = "created_at", order = "desc" }
+) => {
   return knex
     .select("*")
     .from("comments")
     .where({ article_id })
-    .orderBy(sort_by, "desc")
+    .orderBy(sort_by, order)
     .returning("*")
-    .then(comments => {
-      return comments;
+    .then(comment => {
+      if (comment.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "This article id does not exist"
+        });
+      } else {
+        return comment;
+      }
     });
 };
 
-exports.fetchAllArticles = ({ username, topic, sort_by = "created_at" }) => {
+exports.fetchAllArticles = ({
+  author,
+  topic,
+  sort_by = "created_at",
+  order = "desc"
+}) => {
   return knex
     .select(
       "articles.article_id",
@@ -75,14 +104,20 @@ exports.fetchAllArticles = ({ username, topic, sort_by = "created_at" }) => {
     .from("articles")
     .leftJoin("comments", "comments.article_id", "articles.article_id")
     .groupBy("articles.article_id")
-    .orderBy(sort_by, "desc")
+    .orderBy(sort_by, order)
     .modify(query => {
-      if (username) query.where("articles.author", "=", username);
+      if (author) query.where("articles.author", "=", author);
       if (topic) query.where("articles.topic", "=", topic);
     })
 
-    .then(articles => {
-      return articles;
+    .then(article => {
+      if (article.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "No articles have been returned"
+        });
+      }
+      return article;
     });
 };
 

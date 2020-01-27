@@ -116,7 +116,7 @@ describe("/api", () => {
           .get("/api/articles/1")
           .expect(200)
           .then(({ body }) => {
-            expect(body.article[0]).to.be.an("object");
+            expect(body.article).to.be.an("array");
             expect(body.article[0]).to.contain.keys(
               "author",
               "title",
@@ -161,8 +161,9 @@ describe("/api", () => {
           .send({ inc_votes: 1 })
           .expect(200)
           .then(({ body }) => {
-            expect(body.updatedArticle.votes).to.equal(101);
-            expect(body.updatedArticle).to.contain.keys(
+            expect(body.article).to.be.an("array");
+            expect(body.article[0].votes).to.equal(101);
+            expect(body.article[0]).to.contain.keys(
               "article_id",
               "title",
               "body",
@@ -187,7 +188,7 @@ describe("/api", () => {
           .send({})
           .expect(200)
           .then(({ body }) => {
-            expect(body.updatedArticle.votes).to.equal(100);
+            expect(body.article[0].votes).to.equal(100);
           });
       });
     });
@@ -213,7 +214,8 @@ describe("/api", () => {
           .send({ username: "butter_bridge", body: "cool article" })
           .expect(201)
           .then(({ body }) => {
-            expect(body.postedComment[0]).to.contain.keys(
+            expect(body.comment).to.be.an("array");
+            expect(body.comment[0]).to.contain.keys(
               "comment_id",
               "author",
               "article_id",
@@ -288,7 +290,8 @@ describe("/api", () => {
           .get("/api/articles/1/comments")
           .expect(200)
           .then(({ body }) => {
-            expect(body.comments[0]).to.contain.keys(
+            expect(body.comment).to.be.an("array");
+            expect(body.comment[0]).to.contain.keys(
               "comment_id",
               "votes",
               "created_at",
@@ -302,9 +305,17 @@ describe("/api", () => {
           .get("/api/articles/1/comments?sort_by=author")
           .expect(200)
           .then(({ body }) => {
-            expect(body.comments).to.be.sortedBy("author", {
+            expect(body.comment).to.be.sortedBy("author", {
               descending: true
             });
+          });
+      });
+      it("status: 200, orders comments by ascending order", () => {
+        return request(app)
+          .get("/api/articles/1/comments?order=asc")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comment).to.be.ascending;
           });
       });
       it("status: 400, invalid query passed in", () => {
@@ -346,7 +357,8 @@ describe("/api", () => {
           .get("/api/articles")
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles[0]).to.contain.keys(
+            expect(body.article).to.be.an("array");
+            expect(body.article[0]).to.contain.keys(
               "author",
               "article_id",
               "topic",
@@ -361,7 +373,7 @@ describe("/api", () => {
           .get("/api/articles?sort_by=votes")
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles[0]).to.contain.keys(
+            expect(body.article[0]).to.contain.keys(
               "author",
               "article_id",
               "topic",
@@ -369,15 +381,15 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
-            expect(body.articles).to.be.sortedBy("votes", { descending: true });
+            expect(body.article).to.be.sortedBy("votes", { descending: true });
           });
       });
-      it("status: 200, filters the articles correctly when passed in a query username and topic", () => {
+      it("status: 200, filters the articles correctly when passed in a query author and topic", () => {
         return request(app)
-          .get("/api/articles?username=butter_bridge&&topic=mitch")
+          .get("/api/articles?author=butter_bridge&&topic=mitch")
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles[0]).to.contain.keys(
+            expect(body.article[0]).to.contain.keys(
               "author",
               "article_id",
               "topic",
@@ -385,18 +397,16 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
-            expect(body.articles.length).to.equal(3);
-            expect(body.articles[0].author).to.equal("butter_bridge");
+            expect(body.article.length).to.equal(3);
+            expect(body.article[0].author).to.equal("butter_bridge");
           });
       });
       it("status: 200, filters the articles correctly when passed in a query like topic and a sort by", () => {
         return request(app)
-          .get(
-            "/api/articles?sort_by=votes&&username=icellusedkars&&topic=mitch"
-          )
+          .get("/api/articles?sort_by=votes&&author=icellusedkars&&topic=mitch")
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles[0]).to.contain.keys(
+            expect(body.article[0]).to.contain.keys(
               "author",
               "article_id",
               "topic",
@@ -404,9 +414,17 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
-            expect(body.articles).to.be.sortedBy("votes", { descending: true });
-            expect(body.articles.length).to.equal(6);
-            expect(body.articles[0].topic).to.equal("mitch");
+            expect(body.article).to.be.sortedBy("votes", { descending: true });
+            expect(body.article.length).to.equal(6);
+            expect(body.article[0].topic).to.equal("mitch");
+          });
+      });
+      it("status: 200, orders comments by ascending order", () => {
+        return request(app)
+          .get("/api/articles/3?order=asc")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article).to.be.ascending;
           });
       });
       it("status: 404, when passed a path that does not exist", () => {
@@ -433,12 +451,12 @@ describe("/api", () => {
             expect(body.msg).to.equal("This topic does not exist");
           });
       });
-      it("status: 404, if user doesn't exist, return an empty array", () => {
+      it("status: 404, if author doesn't exist, return an empty array", () => {
         return request(app)
-          .get("/api/articles?username='abalama")
+          .get("/api/articles?author='abalama")
           .expect(404)
           .then(({ body }) => {
-            expect(body.msg).to.equal("This username does not exist");
+            expect(body.msg).to.equal("This user does not exist");
           });
       });
     });
@@ -464,7 +482,7 @@ describe("/api", () => {
           .send({ inc_votes: -1 })
           .expect(200)
           .then(({ body }) => {
-            expect(body.updatedComment[0]).to.contain.keys(
+            expect(body.comment[0]).to.contain.keys(
               "comment_id",
               "author",
               "article_id",
@@ -480,7 +498,7 @@ describe("/api", () => {
           .send({ inc_votes: 3 })
           .expect(200)
           .then(({ body }) => {
-            expect(body.updatedComment[0]).to.contain.keys(
+            expect(body.comment[0]).to.contain.keys(
               "comment_id",
               "author",
               "article_id",
@@ -488,7 +506,7 @@ describe("/api", () => {
               "created_at",
               "body"
             );
-            expect(body.updatedComment[0].votes).to.equal(103);
+            expect(body.comment[0].votes).to.equal(103);
           });
       });
       it("status: 400, BAD REQUEST, invalid comment_id", () => {
@@ -506,7 +524,7 @@ describe("/api", () => {
           .send({})
           .expect(200)
           .then(({ body }) => {
-            expect(body.updatedComment[0].votes).to.equal(-100);
+            expect(body.comment[0].votes).to.equal(-100);
           });
       });
       it("status: 404, when passed a path that does not exist", () => {
@@ -553,6 +571,13 @@ describe("/api", () => {
           });
       });
       return Promise.all(promisesArr);
+    });
+  });
+  describe("/api", () => {
+    it("GET", () => {
+      return request(app)
+        .get("/api")
+        .expect(200);
     });
   });
 });
