@@ -231,12 +231,14 @@ GET /api
 
 # Built using:
 
-- Node.js
+- Node.js v13.2.0
 - Express.js
 - PostgreSQL
 - Node postgres
-- Knex.js
-- Mocha
-- Chai
-- Chai-sorted
-- SuperTest
+- Knex v0.20.8
+- Mocha v7.0.0
+- Chai v4.2.0
+- Chai-sorted v0.2.0
+- SuperTest v4.0.2
+- pg v7.17.1
+- nodemon v2.0.2
