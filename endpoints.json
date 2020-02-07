@@ -75,7 +75,7 @@
   },
   "GET /api/articles/:article_id/comments": {
     "description": "responds with a comment based on the article id",
-    "queries": [],
+    "queries": ["sort_by", "order"],
     "exampleResponse": {
       "comment": [
         {
