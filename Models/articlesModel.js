@@ -74,14 +74,7 @@ exports.fetchCommentsByArticleId = (
     .orderBy(sort_by, order)
     .returning("*")
     .then(comment => {
-      if (comment.length === 0) {
-        return Promise.reject({
-          status: 404,
-          msg: "This article id does not exist"
-        });
-      } else {
-        return comment;
-      }
+      return comment;
     });
 };
 
