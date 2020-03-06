@@ -24,10 +24,7 @@ exports.updateArticleByVotes = (article_id, { inc_votes = 0 }) => {
   return knex
     .from("articles")
     .where("articles.article_id", "=", article_id)
-    .modify(query => {
-      if (inc_votes > 0) query.increment("votes", inc_votes);
-      if (inc_votes < 0) query.decrement("votes", inc_votes);
-    })
+    .increment("votes", inc_votes)
     .returning("*")
     .then(article => {
       if (article.length === 0) {

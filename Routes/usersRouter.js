@@ -1,9 +1,11 @@
 const express = require("express");
 const usersRouter = express.Router();
-const {getUserByUsername} = require("../Controllers/usersController");
-const {handleInvalidMethods} = require("../Errors/errors");
+const { getUserByUsername } = require("../Controllers/usersController");
+const { handleInvalidMethods } = require("../Errors/errors");
 
-usersRouter.route("/:username").get(getUserByUsername).all(handleInvalidMethods);
+usersRouter
+  .route("/:username")
+  .get(getUserByUsername)
+  .all(handleInvalidMethods);
 
 module.exports = usersRouter;
-
